@@ -147,6 +147,7 @@ do
 		local key = input.InputBegan:Wait()
 		
 		while key.UserInputType ~= Enum.UserInputType.Keyboard	 do
+			task.wait()
 			key = input.InputBegan:Wait()
 		end
 		
@@ -1403,7 +1404,7 @@ do
 			draggingCanvas = true
 			
 			while draggingCanvas do
-				
+				task.wait()
 				local x, y = mouse.X, mouse.Y
 				
 				sat = math.clamp((x - canvasPosition.X) / canvasSize.X, 0, 1)
@@ -1427,7 +1428,7 @@ do
 			draggingColor = true
 			
 			while draggingColor do
-			
+				task.wait()
 				hue = 1 - math.clamp(1 - ((mouse.X - colorPosition.X) / colorSize.X), 0, 1)
 				color3 = Color3.fromHSV(hue, sat, brightness)
 				
@@ -1459,6 +1460,7 @@ do
 				
 				if debounce then
 					while debounce do
+						task.wait()
 						utility:Wait()
 					end
 				end
@@ -1648,6 +1650,7 @@ do
 			dragging = true
 			
 			while dragging do
+				task.wait()
 				utility:Tween(circle, {ImageTransparency = 0}, 0.1)
 				
 				value = self:updateSlider(slider, nil, nil, min, max, value)
