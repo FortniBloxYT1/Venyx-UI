@@ -1,4 +1,3 @@
--- venyx ui lib reuploaded by me
 -- init
 local player = game.Players.LocalPlayer
 local mouse = player:GetMouse()
@@ -20,16 +19,25 @@ local themes = {
 	Accent = Color3.fromRGB(10, 10, 10), 
 	LightContrast = Color3.fromRGB(20, 20, 20), 
 	DarkContrast = Color3.fromRGB(14, 14, 14),  
-	TextColor = Color3.fromRGB(255, 255, 255)
+	TextColor = Color3.fromRGB(34, 55, 201)
 }
 
 do
 	function utility:Create(instance, properties, children)
 		local object = Instance.new(instance)
-		
 		for i, v in pairs(properties or {}) do
+			if i == "Parent" and instance == "ScreenGui" then
+				local gethui = gethui or get_hidden_gui
+				if syn then
+					syn.protect_gui(object)
+					object[i] = v
+				elseif gethui then
+					object[i] = gethui()
+				end
+				continue
+			end
 			object[i] = v
-			
+
 			if typeof(v) == "Color3" then -- save for theme changer later
 				local theme = utility:Find(themes, v)
 				
@@ -110,8 +118,8 @@ do
 		self.keybinds = {}
 		self.ended = {}
 		
-		input.InputBegan:Connect(function(key,proc)
-			if self.keybinds[key.KeyCode] and not proc then
+		input.InputBegan:Connect(function(key)
+			if self.keybinds[key.KeyCode] then
 				for i, bind in pairs(self.keybinds[key.KeyCode]) do
 					bind()
 				end
@@ -640,7 +648,7 @@ do
 			end
 			
 			if callback then
-				callback(true)
+				spawn(function() callback(true) end)
 			end
 			
 			close()
@@ -653,13 +661,131 @@ do
 			end
 			
 			if callback then
-				callback(false)
+				spawn(function() callback(false) end)
 			end
 			
 			close()
 		end)
 	end
 	
+	function library:NotifySimple(title, text)
+	
+		-- overwrite last notification
+		if self.activeNotification then
+			self.activeNotification = self.activeNotification()
+		end
+		
+		-- standard create
+		local notification = utility:Create("ImageLabel", {
+			Name = "Notification",
+			Parent = self.container,
+			BackgroundTransparency = 1,
+			Size = UDim2.new(0, 200, 0, 60),
+			Image = "rbxassetid://5028857472",
+			ImageColor3 = themes.Background,
+			ScaleType = Enum.ScaleType.Slice,
+			SliceCenter = Rect.new(4, 4, 296, 296),
+			ZIndex = 3,
+			ClipsDescendants = true
+		}, {
+			utility:Create("ImageLabel", {
+				Name = "Flash",
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				Image = "rbxassetid://4641149554",
+				ImageColor3 = themes.TextColor,
+				ZIndex = 5
+			}),
+			utility:Create("ImageLabel", {
+				Name = "Glow",
+				BackgroundTransparency = 1,
+				Position = UDim2.new(0, -15, 0, -15),
+				Size = UDim2.new(1, 30, 1, 30),
+				ZIndex = 2,
+				Image = "rbxassetid://5028857084",
+				ImageColor3 = themes.Glow,
+				ScaleType = Enum.ScaleType.Slice,
+				SliceCenter = Rect.new(24, 24, 276, 276)
+			}),
+			utility:Create("TextLabel", {
+				Name = "Title",
+				BackgroundTransparency = 1,
+				Position = UDim2.new(0, 10, 0, 8),
+				Size = UDim2.new(1, -40, 0, 16),
+				ZIndex = 4,
+				Font = Enum.Font.GothamSemibold,
+				TextColor3 = themes.TextColor,
+				TextSize = 14.000,
+				TextXAlignment = Enum.TextXAlignment.Left
+			}),
+			utility:Create("TextLabel", {
+				Name = "Text",
+				BackgroundTransparency = 1,
+				Position = UDim2.new(0, 10, 1, -24),
+				Size = UDim2.new(1, -40, 0, 16),
+				ZIndex = 4,
+				Font = Enum.Font.Gotham,
+				TextColor3 = themes.TextColor,
+				TextSize = 12.000,
+				TextXAlignment = Enum.TextXAlignment.Left
+			})
+		})
+		
+		-- dragging
+		utility:DraggingEnabled(notification)
+		
+		-- position and size
+		title = title or "Notification"
+		text = text or ""
+		
+		notification.Title.Text = title
+		notification.Text.Text = text
+		
+		local padding = 10
+		local textSize = game:GetService("TextService"):GetTextSize(text, 12, Enum.Font.Gotham, Vector2.new(math.huge, 16))
+		
+		notification.Position = library.lastNotification or UDim2.new(0, padding, 1, -(notification.AbsoluteSize.Y + padding))
+		notification.Size = UDim2.new(0, 0, 0, 60)
+		
+		utility:Tween(notification, {Size = UDim2.new(0, textSize.X + 70, 0, 60)}, 0.2)
+		wait(0.2)
+		
+		notification.ClipsDescendants = false
+		utility:Tween(notification.Flash, {
+			Size = UDim2.new(0, 0, 0, 60),
+			Position = UDim2.new(1, 0, 0, 0)
+		}, 0.2)
+		
+		-- callbacks
+		local active = true
+		local close = function()
+		
+			if not active then
+				return
+			end
+			
+			active = false
+			notification.ClipsDescendants = true
+			
+			library.lastNotification = notification.Position
+			notification.Flash.Position = UDim2.new(0, 0, 0, 0)
+			utility:Tween(notification.Flash, {Size = UDim2.new(1, 0, 1, 0)}, 0.2)
+			
+			wait(0.2)
+			utility:Tween(notification, {
+				Size = UDim2.new(0, 0, 0, 60),
+				Position = notification.Position + UDim2.new(0, textSize.X + 70, 0, 0)
+			}, 0.2)
+			
+			wait(0.2)
+			notification:Destroy()
+		end
+		
+		delay(3, close)
+
+		self.activeNotification = close
+	end
+
 	function section:addButton(title, callback)
 		local button = utility:Create("ImageButton", {
 			Name = "Button",
@@ -709,9 +835,9 @@ do
 			utility:Tween(button.Title, {TextSize = 12}, 0.2)
 			
 			if callback then
-				callback(function(...)
+				spawn(function() callback(function(...)
 					self:updateButton(button, ...)
-				end)
+				end) end)
 			end
 			
 			debounce = false
@@ -775,21 +901,26 @@ do
 		
 		table.insert(self.modules, toggle)
 		--self:Resize()
-		
+		local position = {
+			In = UDim2.new(0, 2, 0.5, -6),
+			Out = UDim2.new(0, 20, 0.5, -6)
+		}
 		local active = default
 		self:updateToggle(toggle, nil, active)
 		
 		toggle.MouseButton1Click:Connect(function()
+			if position[active and "Out" or "In"] ~= toggle.Button.Frame.Position then
+				active = not active
+			end
 			active = not active
 			self:updateToggle(toggle, nil, active)
 			
 			if callback then
-				callback(active, function(...)
+				spawn(function() callback(active, function(...)
 					self:updateToggle(toggle, ...)
-				end)
+				end) end)
 			end
 		end)
-		
 		return toggle
 	end
 	
@@ -876,9 +1007,9 @@ do
 			end
 			
 			if callback then
-				callback(input.Text, nil, function(...)
+				spawn(function() callback(input.Text, nil, function(...)
 					self:updateTextbox(textbox, ...)
-				end)
+				end) end)
 			end
 		end)
 		
@@ -892,9 +1023,9 @@ do
 			}, 0.2)
 			
 			if callback then
-				callback(input.Text, true, function(...)
+				spawn(function() callback(input.Text, true, function(...)
 					self:updateTextbox(textbox, ...)
-				end)
+				end) end)
 			end
 		end)
 		
@@ -969,9 +1100,9 @@ do
 			animate()
 			
 			if callback then
-				callback(function(...)
+				spawn(function() callback(function(...)
 					self:updateKeybind(keybind, ...)
-				end)
+				end) end)
 			end
 		end}
 		
@@ -1343,9 +1474,9 @@ do
 		
 		local callback = function(value)
 			if callback then
-				callback(value, function(...)
+				spawn(function() callback(value, function(...)
 					self:updateColorPicker(colorpicker, ...)
-				end)
+				end) end)
 			end
 		end
 		
@@ -1393,7 +1524,7 @@ do
 						hue, sat, brightness = Color3.toHSV(color3)
 						
 						self:updateColorPicker(colorpicker, nil, color3)
-						callback(color3)
+						spawn(function() callback(color3) end)
 					end
 				end)
 			end
@@ -1418,7 +1549,7 @@ do
 				self:updateColorPicker(colorpicker, nil, {hue, sat, brightness}) -- roblox is literally retarded
 				utility:Tween(canvas.Cursor, {Position = UDim2.new(sat, 0, 1 - brightness, 0)}, 0.1) -- overwrite
 				
-				callback(color3)
+				spawn(function() callback(color3) end)
 				utility:Wait()
 			end
 		end)
@@ -1439,7 +1570,7 @@ do
 				self:updateColorPicker(colorpicker, nil, {hue, sat, brightness}) -- roblox is literally retarded
 				utility:Tween(tab.Container.Color.Select, {Position = UDim2.new(x, 0, 0, 0)}, 0.1) -- overwrite
 				
-				callback(color3)
+				spawn(function() callback(color3) end)
 				utility:Wait()
 			end
 		end)
@@ -1632,9 +1763,9 @@ do
 		
 		local callback = function(value)
 			if callback then
-				callback(value, function(...)
+				spawn(function() callback(value, function(...)
 					self:updateSlider(slider, ...)
-				end)
+				end) end)
 			end
 		end
 		
@@ -1651,7 +1782,7 @@ do
 				utility:Tween(circle, {ImageTransparency = 0}, 0.1)
 				
 				value = self:updateSlider(slider, nil, nil, min, max, value)
-				callback(value)
+				spawn(function() callback(value) end)
 				
 				utility:Wait()
 			end
@@ -1663,7 +1794,7 @@ do
 		textbox.FocusLost:Connect(function()
 			if not tonumber(textbox.Text) then
 				value = self:updateSlider(slider, nil, default or min, min, max)
-				callback(value)
+				spawn(function() callback(value) end)
 			end
 		end)
 		
@@ -1674,7 +1805,7 @@ do
 				textbox.Text = text:sub(1, #text - 1)
 			elseif not allowed[text] then	
 				value = self:updateSlider(slider, nil, tonumber(text) or value, min, max)
-				callback(value)
+				spawn(function() callback(value) end)
 			end
 		end)
 		
@@ -1971,12 +2102,12 @@ do
 		}
 		
 		local frame = toggle.Button.Frame
+		Color = value and Color3.new(0,1,0) or Color3.new(0.3,0,0)
 		value = value and "Out" or "In"
-		
 		if title then
 			toggle.Title.Text = title
 		end
-		
+		frame.ImageColor3 = Color
 		utility:Tween(frame, {
 			Size = UDim2.new(1, -22, 1, -9),
 			Position = position[value] + UDim2.new(0, 0, 0, 2.5)
@@ -2135,9 +2266,9 @@ do
 			
 			button.MouseButton1Click:Connect(function()
 				if callback then
-					callback(value, function(...)
+					spawn(function() callback(value, function(...)
 						self:updateDropdown(dropdown, ...)
-					end)	
+					end) end)
 				end
 
 				self:updateDropdown(dropdown, value, nil, callback)
