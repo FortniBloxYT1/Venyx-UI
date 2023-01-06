@@ -1776,15 +1776,18 @@ do
 		
 		search.Button.MouseButton1Click:Connect(function()
 			if search.Button.Rotation == 0 then
-				self:updateDropdown(dropdown, nil, list, callback)
+				task.wait()
+				self:updateDropdown(dropdown, title, list, callback)
 			else
-				self:updateDropdown(dropdown, nil, nil, callback)
+				task.wait()
+				self:updateDropdown(dropdown, title, nil, callback)
 			end
 		end)
 		
 		search.TextBox.Focused:Connect(function()
 			if search.Button.Rotation == 0 then
-				self:updateDropdown(dropdown, nil, list, callback)
+				task.wait()
+				self:updateDropdown(dropdown, title, list, callback)
 			end
 			
 			focused = true
@@ -1796,6 +1799,7 @@ do
 		
 		search.TextBox:GetPropertyChangedSignal("Text"):Connect(function()
 			if focused then
+				task.wait()
 				local list = utility:Sort(search.TextBox.Text, list)
 				list = #list ~= 0 and list 
 				
@@ -1804,6 +1808,7 @@ do
 		end)
 		
 		dropdown:GetPropertyChangedSignal("Size"):Connect(function()
+			task.wait()
 			self:Resize()
 		end)
 		
@@ -2137,12 +2142,14 @@ do
 			})
 			
 			button.MouseButton1Click:Connect(function()
+				task.wait()
 				if callback then
 					callback(value, function(...)
+						task.wait()
 						self:updateDropdown(dropdown, ...)
 					end)	
 				end
-
+				task.wait()
 				self:updateDropdown(dropdown, value, nil, callback)
 			end)
 			
