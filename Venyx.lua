@@ -7,7 +7,7 @@ local input = game:GetService("UserInputService")
 local run = game:GetService("RunService")
 local tween = game:GetService("TweenService")
 local tweeninfo = TweenInfo.new
-
+local pep = 0
 -- additional
 local utility = {}
 
@@ -2140,15 +2140,14 @@ do
 					TextTransparency = 0.10000000149012
 				})
 			})
-			
 			button.MouseButton1Click:Connect(function()
 				task.wait()
-				if callback then
-					callback(value, function(...)
-						task.wait()
-						self:updateDropdown(dropdown, ...)
-					end)	
-				end
+				if pep == 1 then return end
+				local pep = 1
+				callback(value, function(...)
+					task.wait()
+					self:updateDropdown(dropdown, ...)
+				end)	
 				task.wait()
 				self:updateDropdown(dropdown, value, nil, callback)
 			end)
