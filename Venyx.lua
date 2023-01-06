@@ -1,15 +1,6 @@
 -- init
 local Playerss = game:GetService("Players")
 local player = Playerss.LocalPlayer
-	
--- anti afk
-local vu = game:GetService("VirtualUser")
-game:GetService("Players").LocalPlayer.Idled:connect(
-function()
-    vu:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-    wait(math.random(0.3, 1.1))
-    vu:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-end)
 
 local mouse = player:GetMouse()
 
