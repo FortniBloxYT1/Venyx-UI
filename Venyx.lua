@@ -1,8 +1,7 @@
--- init
 local player = game.Players.LocalPlayer
-local mouse = player:GetMouse()
 
 -- services
+local mouse = player:GetMouse()
 local input = game:GetService("UserInputService")
 local run = game:GetService("RunService")
 local tween = game:GetService("TweenService")
@@ -12,7 +11,6 @@ local tweeninfo = TweenInfo.new
 local utility = {}
 
 -- themes
-local objects = {}
 local themes = {
 	Background = Color3.fromRGB(24, 24, 24), 
 	Glow = Color3.fromRGB(0, 0, 0), 
@@ -21,6 +19,7 @@ local themes = {
 	DarkContrast = Color3.fromRGB(14, 14, 14),  
 	TextColor = Color3.fromRGB(255, 255, 255)
 }
+local objects = {}
 
 do
 	function utility:Create(instance, properties, children)
@@ -34,7 +33,7 @@ do
 
 				if theme then
 					objects[theme] = objects[theme] or {}
-					objects[theme][i] = objects[theme][i] or setmetatable({}, {_mode = "k"})
+					objects[theme][i] = objects[theme][i] or setmetatable({}, {_mode = "k"}) -- weak table
 
 					table.insert(objects[theme][i], object)
 				end
@@ -93,7 +92,7 @@ do
 		clone:ClearAllChildren()
 
 		object.ImageTransparency = 1
-		utility:Tween(clone, {Size = object.Size}, 0.2)
+		utility:Tween(clone, {Size = object.Size}, 0.2) -- trying 0.4
 
 		spawn(function()
 			wait(0.2)
@@ -109,8 +108,8 @@ do
 		self.keybinds = {}
 		self.ended = {}
 
-		input.InputBegan:Connect(function(key)
-			if self.keybinds[key.KeyCode] then
+		input.InputBegan:Connect(function(key, processed)
+			if self.keybinds[key.KeyCode] and not processed then
 				for i, bind in pairs(self.keybinds[key.KeyCode]) do
 					bind()
 				end
@@ -211,12 +210,13 @@ do
 
 	-- new classes
 
-	function library.new(title)
+	function library.new(title, icon)
+		-- base ui 
 		local container = utility:Create("ScreenGui", {
 			Name = title,
-			Parent = game.CoreGui
+			Parent = game.Players.LocalPlayer.PlayerGui--game.CoreGui
 		}, {
-			utility:Create("ImageLabel", {
+			utility:Create("ImageLabel", { -- main
 				Name = "Main",
 				BackgroundTransparency = 1,
 				Position = UDim2.new(0.25, 0, 0.052435593, 0),
@@ -226,7 +226,7 @@ do
 				ScaleType = Enum.ScaleType.Slice,
 				SliceCenter = Rect.new(4, 4, 296, 296)
 			}, {
-				utility:Create("ImageLabel", {
+				utility:Create("ImageLabel", { -- glow
 					Name = "Glow",
 					BackgroundTransparency = 1,
 					Position = UDim2.new(0, -15, 0, -15),
@@ -237,7 +237,7 @@ do
 					ScaleType = Enum.ScaleType.Slice,
 					SliceCenter = Rect.new(24, 24, 276, 276)
 				}),
-				utility:Create("ImageLabel", {
+				utility:Create("ImageLabel", { -- pages
 					Name = "Pages",
 					BackgroundTransparency = 1,
 					ClipsDescendants = true,
@@ -249,7 +249,7 @@ do
 					ScaleType = Enum.ScaleType.Slice,
 					SliceCenter = Rect.new(4, 4, 296, 296)
 				}, {
-					utility:Create("ScrollingFrame", {
+					utility:Create("ScrollingFrame", { -- pages frame
 						Name = "Pages_Container",
 						Active = true,
 						BackgroundTransparency = 1,
@@ -264,7 +264,7 @@ do
 						})
 					})
 				}),
-				utility:Create("ImageLabel", {
+				utility:Create("ImageLabel", { -- topbar
 					Name = "TopBar",
 					BackgroundTransparency = 1,
 					ClipsDescendants = true,
@@ -303,7 +303,7 @@ do
 	end
 
 	function page.new(library, title, icon)
-		local button = utility:Create("TextButton", {
+		local button = utility:Create("TextButton", { -- button
 			Name = title,
 			Parent = library.pagesContainer,
 			BackgroundTransparency = 1,
@@ -315,7 +315,7 @@ do
 			Text = "",
 			TextSize = 14
 		}, {
-			utility:Create("TextLabel", {
+			utility:Create("TextLabel", { -- text
 				Name = "Title",
 				AnchorPoint = Vector2.new(0, 0.5),
 				BackgroundTransparency = 1,
@@ -329,7 +329,7 @@ do
 				TextTransparency = 0.65,
 				TextXAlignment = Enum.TextXAlignment.Left
 			}),
-			icon and utility:Create("ImageLabel", {
+			icon and utility:Create("ImageLabel", { -- icon
 				Name = "Icon", 
 				AnchorPoint = Vector2.new(0, 0.5),
 				BackgroundTransparency = 1,
@@ -342,7 +342,7 @@ do
 			}) or {}
 		})
 
-		local container = utility:Create("ScrollingFrame", {
+		local container = utility:Create("ScrollingFrame", { -- page container
 			Name = title,
 			Parent = library.container.Main,
 			Active = true,
@@ -370,7 +370,7 @@ do
 	end
 
 	function section.new(page, title)
-		local container = utility:Create("ImageLabel", {
+		local container = utility:Create("ImageLabel", { -- image container
 			Name = title,
 			Parent = page.container,
 			BackgroundTransparency = 1,
@@ -382,7 +382,7 @@ do
 			SliceCenter = Rect.new(4, 4, 296, 296),
 			ClipsDescendants = true
 		}, {
-			utility:Create("Frame", {
+			utility:Create("Frame", { -- frame container
 				Name = "Container",
 				Active = true,
 				BackgroundTransparency = 1,
@@ -390,7 +390,7 @@ do
 				Position = UDim2.new(0, 8, 0, 8),
 				Size = UDim2.new(1, -16, 1, -16)
 			}, {
-				utility:Create("TextLabel", {
+				utility:Create("TextLabel", { -- title
 					Name = "Title",
 					BackgroundTransparency = 1,
 					Size = UDim2.new(1, 0, 0, 20),
@@ -449,7 +449,7 @@ do
 		for property, objects in pairs(objects[theme]) do
 			for i, object in pairs(objects) do
 				if not object.Parent or (object.Name == "Button" and object.Parent.Name == "ColorPicker") then
-					objects[i] = nil -- i can do this because weak tables :D
+					objects[i] = nil -- i can do this because of weak tables :D
 				else
 					object[property] = color3
 				end
@@ -657,8 +657,6 @@ do
 
 			close()
 		end)
-		wait(3)
-		close()
 	end
 
 	function section:addButton(title, callback)
@@ -773,18 +771,19 @@ do
 				})
 			})
 		})
+
 		table.insert(self.modules, toggle)
 		--self:Resize()
 
-		--toggle:SetAttribute("Active", default)
-		self:updateToggle(toggle, nil, default)
+		local active = default
+		self:updateToggle(toggle, nil, active)
 
 		toggle.MouseButton1Click:Connect(function()
-			--toggle:SetAttribute("Active", not toggle:GetAttribute("Active"))
-			self:updateToggle(toggle)
+			active = not active
+			self:updateToggle(toggle, nil, active)
 
 			if callback then
-				callback(toggle:GetAttribute("Active"), function(...)
+				callback(active, function(...)
 					self:updateToggle(toggle, ...)
 				end)
 			end
@@ -898,38 +897,6 @@ do
 			end
 		end)
 
-		return textbox
-	end
-	
-	function section:addTextlabel(title)
-		local textbox = utility:Create("ImageLabel", {
-			Name = "Textbox",
-			Parent = self.container,
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-			Size = UDim2.new(1, 0, 0, 30),
-			ZIndex = 2,
-			Image = "rbxassetid://5028857472",
-			ImageColor3 = themes.DarkContrast,
-			ScaleType = Enum.ScaleType.Slice,
-			SliceCenter = Rect.new(2, 2, 298, 298)
-		}, {
-			utility:Create("TextLabel", {
-				Name = "Title",
-				AnchorPoint = Vector2.new(0, 0.5),
-				BackgroundTransparency = 1,
-				Position = UDim2.new(0, 10, 0.5, 1),
-				Size = UDim2.new(0.5, 0, 1, 0),
-				ZIndex = 3,
-				Font = Enum.Font.Gotham,
-				Text = title,
-				TextColor3 = themes.TextColor,
-				TextSize = 12,
-				TextTransparency = 0.10000000149012,
-				TextXAlignment = Enum.TextXAlignment.Left
-			}),
-		})
-		table.insert(self.modules, textbox)
 		return textbox
 	end
 
@@ -1396,7 +1363,7 @@ do
 			end
 		end
 
-		for i, container in pairs(tab.Container.Inputs:GetChildren()) do -- i know what you are about to say, so shut up
+		for i, container in pairs(tab.Container.Inputs:GetChildren()) do
 			if container:IsA("ImageLabel") then
 				local textbox = container.Textbox
 				local focused
@@ -1805,15 +1772,15 @@ do
 
 		search.Button.MouseButton1Click:Connect(function()
 			if search.Button.Rotation == 0 then
-				self:updateDropdown(dropdown, nil, list, callback)
+				self:updateDropdown(dropdown, nil, list)
 			else
-				self:updateDropdown(dropdown, nil, nil, callback)
+				self:updateDropdown(dropdown)
 			end
 		end)
 
 		search.TextBox.Focused:Connect(function()
 			if search.Button.Rotation == 0 then
-				self:updateDropdown(dropdown, nil, list, callback)
+				self:updateDropdown(dropdown, nil, list)
 			end
 
 			focused = true
@@ -1828,7 +1795,7 @@ do
 				local list = utility:Sort(search.TextBox.Text, list)
 				list = #list ~= 0 and list 
 
-				self:updateDropdown(dropdown, nil, list, callback)
+				self:updateDropdown(dropdown, nil, list)
 			end
 		end)
 
@@ -1982,7 +1949,7 @@ do
 				return module
 			end
 		end
-		print("time to error")
+
 		error("No module found under "..tostring(info))
 	end
 
@@ -1996,15 +1963,13 @@ do
 
 	function section:updateToggle(toggle, title, value)
 		toggle = self:getModule(toggle)
+
 		local position = {
 			In = UDim2.new(0, 2, 0.5, -6),
 			Out = UDim2.new(0, 20, 0.5, -6)
 		}
+
 		local frame = toggle.Button.Frame
-		if value == nil then
-			value = not toggle:GetAttribute("Active")
-		end
-		toggle:SetAttribute("Active", value)
 		value = value and "Out" or "In"
 
 		if title then
@@ -2073,7 +2038,7 @@ do
 		local color3
 		local hue, sat, brightness
 
-		if type(color) == "table" then -- roblox is literally retarded x2
+		if type(color) == "table" then -- roblox is literally retarded
 			hue, sat, brightness = unpack(color)
 			color3 = Color3.fromHSV(hue, sat, brightness)
 		else
@@ -2092,7 +2057,7 @@ do
 				local value = math.clamp(color3[container.Name], 0, 1) * 255
 
 				container.Textbox.Text = math.floor(value)
-				--callback(container.Name:lower(), value)
+				callback(container.Name:lower(), value)
 			end
 		end
 	end
@@ -2112,10 +2077,7 @@ do
 		end
 
 		percent = math.clamp(percent, 0, 1)
-		local function round(number, to)
-						return math.floor((number / to) + 0.5) * to
-					end
-		value = value or round(min + (max - min) * percent, 0.1)
+		value = value or math.floor(min + (max - min) * percent)
 
 		slider.TextBox.Text = value
 		utility:Tween(bar.Fill, {Size = UDim2.new(percent, 0, 1, 0)}, 0.1)
@@ -2127,7 +2089,7 @@ do
 		return value
 	end
 
-	function section:updateDropdown(dropdown, title, list, callback)
+	function section:updateDropdown(dropdown, title, list)
 		dropdown = self:getModule(dropdown)
 
 		if title then
@@ -2171,13 +2133,7 @@ do
 			})
 
 			button.MouseButton1Click:Connect(function()
-				if callback then
-					callback(value, function(...)
-						self:updateDropdown(dropdown, ...)
-					end)	
-				end
-
-				self:updateDropdown(dropdown, value, nil, callback)
+				self:updateDropdown(dropdown, value)
 			end)
 
 			entries = entries + 1
@@ -2204,5 +2160,3 @@ do
 		end
 	end
 end
-
-return library
