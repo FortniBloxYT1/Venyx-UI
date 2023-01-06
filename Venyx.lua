@@ -7,6 +7,7 @@ local input = game:GetService("UserInputService")
 local run = game:GetService("RunService")
 local tween = game:GetService("TweenService")
 local tweeninfo = TweenInfo.new
+local pep = 0
 -- additional
 local utility = {}
 
@@ -1773,44 +1774,6 @@ do
 		
 		list = list or {}
 		
-		search.Button.MouseButton1Click:Connect(function()
-			if search.Button.Rotation == 0 then
-				task.wait()
-				self:updateDropdown(dropdown, title, list, callback)
-			else
-				task.wait()
-				self:updateDropdown(dropdown, title, nil, callback)
-			end
-		end)
-		
-		search.TextBox.Focused:Connect(function()
-			if search.Button.Rotation == 0 then
-				task.wait()
-				self:updateDropdown(dropdown, title, list, callback)
-			end
-			
-			focused = true
-		end)
-		
-		search.TextBox.FocusLost:Connect(function()
-			focused = false
-		end)
-		
-		search.TextBox:GetPropertyChangedSignal("Text"):Connect(function()
-			if focused then
-				task.wait()
-				local list = utility:Sort(search.TextBox.Text, list)
-				list = #list ~= 0 and list 
-				
-				self:updateDropdown(dropdown, nil, list, callback)
-			end
-		end)
-		
-		dropdown:GetPropertyChangedSignal("Size"):Connect(function()
-			task.wait()
-			self:Resize()
-		end)
-		
 		return dropdown
 	end
 	
@@ -2115,7 +2078,7 @@ do
 		end
 			
 		for i, value in pairs(list or {}) do
-			local button = utility:Create("ImageButton", {
+			utility:Create("ImageButton", {
 				Parent = dropdown.List.Frame,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
@@ -2146,22 +2109,7 @@ do
 		local frame = dropdown.List.Frame
 		
 		utility:Tween(dropdown, {Size = UDim2.new(1, 0, 0, (entries == 0 and 30) or math.clamp(entries, 0, 3) * 34 + 38)}, 0.3)
-		utility:Tween(dropdown.Search.Button, {Rotation = list and 180 or 0}, 0.3)
-		
-		if entries > 3 then
-		
-			for i, button in pairs(dropdown.List.Frame:GetChildren()) do
-				if button:IsA("ImageButton") then
-					button.Size = UDim2.new(1, -6, 0, 30)
-				end
-			end
-			
-			frame.CanvasSize = UDim2.new(0, 0, 0, (entries * 34) - 4)
-			frame.ScrollBarImageTransparency = 0
-		else
-			frame.CanvasSize = UDim2.new(0, 0, 0, 0)
-			frame.ScrollBarImageTransparency = 1
-		end
+		utility:Tween(dropdown.Search.Button, {Rotation = list and 180 or 0}, 0.3)		
 	end
 end
 
