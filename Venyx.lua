@@ -7,7 +7,7 @@ local input = game:GetService("UserInputService")
 local run = game:GetService("RunService")
 local tween = game:GetService("TweenService")
 local tweeninfo = TweenInfo.new
-local pep = 0
+
 -- additional
 local utility = {}
 
@@ -147,7 +147,6 @@ do
 		local key = input.InputBegan:Wait()
 		
 		while key.UserInputType ~= Enum.UserInputType.Keyboard	 do
-			task.wait()
 			key = input.InputBegan:Wait()
 		end
 		
@@ -1404,7 +1403,7 @@ do
 			draggingCanvas = true
 			
 			while draggingCanvas do
-				task.wait()
+				
 				local x, y = mouse.X, mouse.Y
 				
 				sat = math.clamp((x - canvasPosition.X) / canvasSize.X, 0, 1)
@@ -1428,7 +1427,7 @@ do
 			draggingColor = true
 			
 			while draggingColor do
-				task.wait()
+			
 				hue = 1 - math.clamp(1 - ((mouse.X - colorPosition.X) / colorSize.X), 0, 1)
 				color3 = Color3.fromHSV(hue, sat, brightness)
 				
@@ -1460,7 +1459,6 @@ do
 				
 				if debounce then
 					while debounce do
-						task.wait()
 						utility:Wait()
 					end
 				end
@@ -1650,7 +1648,6 @@ do
 			dragging = true
 			
 			while dragging do
-				task.wait()
 				utility:Tween(circle, {ImageTransparency = 0}, 0.1)
 				
 				value = self:updateSlider(slider, nil, nil, min, max, value)
@@ -1773,6 +1770,39 @@ do
 		local focused
 		
 		list = list or {}
+		
+		search.Button.MouseButton1Click:Connect(function()
+			if search.Button.Rotation == 0 then
+				self:updateDropdown(dropdown, nil, list, callback)
+			else
+				self:updateDropdown(dropdown, nil, nil, callback)
+			end
+		end)
+		
+		search.TextBox.Focused:Connect(function()
+			if search.Button.Rotation == 0 then
+				self:updateDropdown(dropdown, nil, list, callback)
+			end
+			
+			focused = true
+		end)
+		
+		search.TextBox.FocusLost:Connect(function()
+			focused = false
+		end)
+		
+		search.TextBox:GetPropertyChangedSignal("Text"):Connect(function()
+			if focused then
+				local list = utility:Sort(search.TextBox.Text, list)
+				list = #list ~= 0 and list 
+				
+				self:updateDropdown(dropdown, nil, list, callback)
+			end
+		end)
+		
+		dropdown:GetPropertyChangedSignal("Size"):Connect(function()
+			self:Resize()
+		end)
 		
 		return dropdown
 	end
@@ -2078,7 +2108,7 @@ do
 		end
 			
 		for i, value in pairs(list or {}) do
-			utility:Create("ImageButton", {
+			local button = utility:Create("ImageButton", {
 				Parent = dropdown.List.Frame,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
@@ -2103,15 +2133,39 @@ do
 				})
 			})
 			
+			button.MouseButton1Click:Connect(function()
+				if callback then
+					callback(value, function(...)
+						self:updateDropdown(dropdown, ...)
+					end)	
+				end
+
+				self:updateDropdown(dropdown, value, nil, callback)
+			end)
+			
 			entries = entries + 1
 		end
 		
 		local frame = dropdown.List.Frame
 		
 		utility:Tween(dropdown, {Size = UDim2.new(1, 0, 0, (entries == 0 and 30) or math.clamp(entries, 0, 3) * 34 + 38)}, 0.3)
-		utility:Tween(dropdown.Search.Button, {Rotation = list and 180 or 0}, 0.3)		
+		utility:Tween(dropdown.Search.Button, {Rotation = list and 180 or 0}, 0.3)
+		
+		if entries > 3 then
+		
+			for i, button in pairs(dropdown.List.Frame:GetChildren()) do
+				if button:IsA("ImageButton") then
+					button.Size = UDim2.new(1, -6, 0, 30)
+				end
+			end
+			
+			frame.CanvasSize = UDim2.new(0, 0, 0, (entries * 34) - 4)
+			frame.ScrollBarImageTransparency = 0
+		else
+			frame.CanvasSize = UDim2.new(0, 0, 0, 0)
+			frame.ScrollBarImageTransparency = 1
+		end
 	end
 end
 
-print("dino was here :\)")
 return library
