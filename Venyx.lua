@@ -14,17 +14,12 @@
 	-- themes
 	local objects = {}
 	local themes = {
-		NotToggledColor =  Color3.fromRGB(255, 100, 89),
-		Background = Color3.fromRGB(25,25,25),
-		Glow = Color3.fromRGB(0,0,0),
-		Accent = Color3.fromRGB(0, 153, 224),
-		LightContrast = Color3.fromRGB(40,40,40),
-		DarkContrast = Color3.fromRGB(30,30,30),
-		TextColor = Color3.fromRGB(255, 255, 255),
-		ButtonColor = Color3.fromRGB(0, 153, 224),
-		ToggledColor = Color3.fromRGB(0, 153, 224),
-		SliderColor = Color3.fromRGB(0, 153, 224),
-		TopBarColor = Color3.fromRGB(35,35,35),
+		Background = Color3.fromRGB(24, 24, 24), 
+		Glow = Color3.fromRGB(0, 0, 0), 
+		Accent = Color3.fromRGB(10, 10, 10), 
+		LightContrast = Color3.fromRGB(20, 20, 20), 
+		DarkContrast = Color3.fromRGB(14, 14, 14),  
+		TextColor = Color3.fromRGB(255, 255, 255)
 	}
 
 	do
