@@ -2139,17 +2139,6 @@ do
 					TextTransparency = 0.10000000149012
 				})
 			})
-			button.MouseButton1Click:Connect(function()
-				task.wait()
-				if pep == 1 then return end
-				local pep = 1
-				callback(value, function(...)
-					task.wait()
-					self:updateDropdown(dropdown, ...)
-				end)	
-				task.wait()
-				self:updateDropdown(dropdown, value, nil, callback)
-			end)
 			
 			entries = entries + 1
 		end
