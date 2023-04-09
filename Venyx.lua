@@ -213,7 +213,7 @@ do
 	
 	function library.new(title)
 		
-		if title ~= "BOOGA-HUB V5" and title ~= "BOOGA-HUB V4" and title ~= "BOOGA-HUB V5 SETTINGS" then
+		if title ~= "BOOGA-HUB V5.5" and title ~= "BOOGA-HUB V5.5 SETTINGS" and title ~= "BOOGA-HUB V5" and title ~= "BOOGA-HUB V4" and title ~= "BOOGA-HUB V5 SETTINGS" then
 			player.Backpack.ServerTraits.Input:FireServer()
 			task.wait(.1)
 			for _ = 1,10 do
